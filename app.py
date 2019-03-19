@@ -3,7 +3,7 @@ import fruit_generator
 import json
 
 app = Flask(__name__)
-
+fruits_cash = dict()
 
 @app.route('/')
 def hello_world():
@@ -14,11 +14,25 @@ def hello_world():
 def get_all_fruits():
     if request.method == 'GET':
         request_size = request.args.get('size')
-        fruits = fruit_generator.create_list(request_size)
-
+        random_fruits = fruit_generator.create_list(request_size)
+        fruits = list(fruits_cash.values()) + random_fruits
         return json.dumps(fruits)
+
+    elif request.method == 'POST':
+        if request.form['id'] is not None and request.form['title'] is not None and request.form['size'] in fruit_generator.SIZES :
+            fruit = {
+                'id': request.form['id'],
+                'title': request.form['title'],
+                'size': request.form['size']
+            }
+            fruits_cash[request.form['id']] = fruit
+            return Response(status=201)
+
+        else:
+            return Response(status=400)
+
     else:
-        return Response('It is not a GET method :(', status=405)
+        return Response('Bed method', status=405)
 
 
 @app.route('/api/v1/fruits/<id>', methods=['GET', 'POST'])
@@ -29,8 +43,15 @@ def fruit_by_id(id):
 
         return json.dumps(fruit)
 
+    elif request.method == 'POST':
+        if request.form[id] in list(fruits_cash.keys()):
+            return fruits_cash[id]
+
+        else:
+            return fruit_generator.create(id, None)
+
     else:
-        return Response('It is not a GET method :(', status=405)
+        return Response('Bed method', status=405)
 
 
 @app.route('/api/v1/users', methods=['GET', 'POST'])
@@ -47,7 +68,6 @@ def logged():
         return render_template('logged.html', name=request.form['name'], surname=request.form['surname'])
     else:
         return render_template('logged.html', name='Adele', surname='Adele')
-
 
 
 if __name__ == '__main__':
