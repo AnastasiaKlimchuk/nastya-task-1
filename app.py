@@ -5,9 +5,19 @@ import json
 app = Flask(__name__)
 fruits_cash = dict()
 
+
 @app.route('/')
 def hello_world():
     return 'Hello World!'
+
+
+def request_validator(request):
+    return request.form['id'] is not None and request.form['title'] is not None and \
+           request.form['size'] in fruit_generator.SIZES
+
+
+def check_authorization(request):
+    pass
 
 
 @app.route('/api/v1/fruits', methods=['GET', 'POST'])
@@ -19,15 +29,19 @@ def get_all_fruits():
         return json.dumps(fruits)
 
     elif request.method == 'POST':
-        if request.form['id'] is not None and request.form['title'] is not None and request.form['size'] in fruit_generator.SIZES :
-            fruit = {
-                'id': request.form['id'],
-                'title': request.form['title'],
-                'size': request.form['size']
-            }
-            fruits_cash[request.form['id']] = fruit
-            return Response(status=201)
+        if request_validator(request):
 
+            if request.headers['Authorization'] == 'admin':
+                fruit = {
+                    'id': request.form['id'],
+                    'title': request.form['title'],
+                    'size': request.form['size']
+                }
+                fruits_cash[request.form['id']] = fruit
+                return Response('OK', status=201)
+
+            elif request.headers['Authorization'] is None or request.headers['Authorization'] is not 'admin':
+                return Response('Please authorize', status=403)
         else:
             return Response(status=400)
 
