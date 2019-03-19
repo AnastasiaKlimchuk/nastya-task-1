@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, json
+from flask import Flask, request, Response, json, render_template
 import fruit_generator
 import json
 
@@ -31,6 +31,23 @@ def fruit_by_id(id):
 
     else:
         return Response('It is not a GET method :(', status=405)
+
+
+@app.route('/api/v1/users', methods=['GET', 'POST'])
+def login():
+    if 'name' in request.form and 'surname' in request.form:
+        return render_template('login.html', name=request.form['name'], surname=request.form['surname'])
+    else:
+        return render_template('login.html', name='Adele', surname='Adele')
+
+
+@app.route('/api/v1/logged.html', methods=['GET', 'POST'])
+def logged():
+    if 'name' in request.form and 'surname' in request.form:
+        return render_template('logged.html', name=request.form['name'], surname=request.form['surname'])
+    else:
+        return render_template('logged.html', name='Adele', surname='Adele')
+
 
 
 if __name__ == '__main__':
